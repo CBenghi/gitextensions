@@ -312,23 +312,33 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
 
                 for (var index = 0; index < repos.Count; index++)
                 {
-                    listView1.Items.Add(new ListViewItem(repos[index].Caption)
+                    var add = true;
+                    if (!string.IsNullOrWhiteSpace(txtFilter.Text))
                     {
-                        ForeColor = ForeColor,
-                        Font = AppSettings.Font,
-                        Group = isFavourite ? GetTileGroup(repos[index].Repo) : _lvgRecentRepositories,
-                        ImageIndex = repoValidityArray[index] ? 1 : 0,
-                        UseItemStyleForSubItems = false,
-                        Tag = repos[index].Repo,
-                        ToolTipText = repos[index].Repo.Path,
-                        SubItems =
+                        string str = repos[index].Caption ?? "";
+                        add = str.Contains(txtFilter.Text, StringComparison.InvariantCultureIgnoreCase);
+                    }
+
+                    if (add)
+                    {
+                        listView1.Items.Add(new ListViewItem(repos[index].Caption)
+                        {
+                            ForeColor = ForeColor,
+                            Font = AppSettings.Font,
+                            Group = isFavourite ? GetTileGroup(repos[index].Repo) : _lvgRecentRepositories,
+                            ImageIndex = repoValidityArray[index] ? 1 : 0,
+                            UseItemStyleForSubItems = false,
+                            Tag = repos[index].Repo,
+                            ToolTipText = repos[index].Repo.Path,
+                            SubItems =
                         {
                             {
                                 _controller.GetCurrentBranchName(repos[index].Repo.Path), BranchNameColor, BackColor, _secondaryFont
                             },
                             //// NB: we can add a 3rd row as well: { repository.Repo.Category, SystemColors.GrayText, BackColor, _secondaryFont }
                         }
-                    });
+                        });
+                    }
                 }
             }
         }
@@ -881,6 +891,21 @@ namespace GitUI.CommandsDialogs.BrowseDialog.DashboardControl
             }
 
             return true;
+        }
+
+        private void txtFilter_TextChanged(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtFilter.Text)
+                ||
+                txtFilter.Text.Length > 2)
+            {
+                ShowRecentRepositories();
+                txtFilter.ForeColor = Color.Black;
+            }
+            else
+            {
+                txtFilter.ForeColor = Color.Red;
+            }
         }
     }
 }
